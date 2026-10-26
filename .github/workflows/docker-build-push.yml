@@ -72,6 +72,7 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy cs6620-app run ${{ github.run_number }} commit ${GITHUB_SHA::7}" \
             --parameters "{\"commands\":[
+                          \"set -e\",
               \"docker pull $IMAGE\",
               \"docker stop cs6620-app || true\",
               \"docker rm cs6620-app || true\",
