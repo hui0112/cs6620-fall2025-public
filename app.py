@@ -2,6 +2,7 @@ import os
 import re
 import csv
 from io import StringIO
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from pydub import AudioSegment
@@ -89,7 +90,7 @@ def parse_log_content(log_content):
         data[filename].append(segment)
     return data
 
-# Version: 1.0.1 - Triggering GitHub Actions build after rename the 'Python.app.yml.bal'
+# Version: 2.0 - Automated deployment via GitHub Actions + AWS SSM
 @app.route('/audio_files/<path:filename>')
 def serve_audio_file(filename):
     """
@@ -141,9 +142,33 @@ def serve_audio_segment():
         return f"Error extracting audio segment: {str(e)}", 500
 
 @app.route('/')
+def hello():
+    """
+    Version 2.0 landing page: proves this build came from the automated pipeline.
+    """
+    return f'''
+    <h1>Hello from Automated CI/CD Pipeline!</h1>
+    <p><strong>Version:</strong> 2.0 - Automated Deployment</p>
+    <p><strong>Deployed via:</strong> GitHub Actions + AWS SSM</p>
+    <p><strong>Build Date:</strong> {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+    <p><strong>Assignment:</strong> Automated EC2 Deployment</p>
+    <p><a href="/player">Open the audio player</a></p>
+    '''
+
+@app.route('/health')
+def health():
+    return {
+        'status': 'healthy',
+        'version': '2.0',
+        'deployment_method': 'automated',
+        'timestamp': datetime.now().isoformat()
+    }
+
+@app.route('/player')
 def index():
     """
     Renders the main HTML page for the client-side audio player.
+    (Moved from '/' to '/player' in v2.0.)
     """
     return render_template('index.html')
 
@@ -406,7 +431,7 @@ def save_label():
             'start_time': round(data['start_time'], 3),
             'end_time': round(data['end_time'], 3),
             'duration': round(data['end_time'] - data['start_time'], 3),
-            'labeled_at': __import__('datetime').datetime.now().isoformat()
+            'labeled_at': datetime.now().isoformat()
         }
 
         # Save to CSV file
